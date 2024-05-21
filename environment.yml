@@ -1,0 +1,4 @@
+name: van-gogh
+channels:
+  - defaults
+prefix: /home/lilpharaoh1/anaconda3/envs/van-gogh
