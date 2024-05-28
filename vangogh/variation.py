@@ -1,4 +1,7 @@
 import numpy as np
+import random
+
+
 
 
 def crossover(genes, method="ONE_POINT"):
@@ -11,11 +14,28 @@ def crossover(genes, method="ONE_POINT"):
 
         for i in range(len(genes)):
             offspring[i,:] = np.where(np.arange(genes.shape[1]) <= crossover_points[i], parents_1[i,:], parents_2[i,:])
+
+    # k-points
+    elif method[0].isdigit() and method[1:] == '_POINT':
+        length = len(parents_1)
+        crossover_points = np.sort(np.random.randint(0, genes.shape[1], size=(genes.shape[0], int(method[0]))))
+        
+        offspring = parents_1.copy()
+
+        for i in range(len(genes)):
+            for j in range(crossover_points.shape[1]):
+                if j % 2 == 0:
+                    start = crossover_points[i,j]
+                    end = length
+                    if j + 1 < crossover_points.shape[1]:
+                        end = crossover_points[i,j+1]
+                    offspring[i, start:end] = parents_2[i, start:end]
     else:
         raise Exception("Unknown crossover method")
 
     return offspring
 
+# print(crossover())
 
 def mutate(genes, feature_intervals,
            mutation_probability=0.1, num_features_mutation_strength=0.05):
