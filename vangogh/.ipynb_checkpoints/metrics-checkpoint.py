@@ -82,3 +82,38 @@ def population_analysis(default_settings, run_algo, \
         np.save(f, out)
     
     return out
+
+def time_analysis(default_settings, run_algo, \
+                            thresh_range=(50000, 500000), thresh_mode='exp', thresh_n=10, 
+                            population = 100):
+    # Define threh range
+    if thresh_mode == 'linear':
+        thresh_steps = np.linspace(*thresh_range, thresh_n)
+    elif thresh_mode == 'exp':
+        thresh_steps = np.logspace(np.log10(thresh_range[0]), np.log10(thresh_range[1]), num=thresh_n)
+        
+    print("thresh_steps : ", thresh_steps)
+    
+    out = np.zeros(thresh_n)
+    out[0] = thresh_steps
+    for thresh_idx, thresh in enumerate(thresh_steps):
+        pop_found = False
+        # Set population in settings
+        default_settings[1] = int(population)
+        
+        data = run_algo(default_settings)
+        df = pd.DataFrame(data)
+        pop_fitness = np.min(df["best-fitness"])
+        print(f"pop_fitness: <{pop_fitness}>, thresh: <{thresh}> ")
+        if pop_fitness < thresh:
+            out[thresh_idx] = df["time-elapsed"]
+        else:
+            out[thresh_idx] = -1
+
+    out_filename = "pop_analysis.npy"
+    with open(out_filename, 'wb') as f:
+        np.save(f, out)
+    
+    return out
+
+##TODO Num points, literally the same as population number, juts fix population and set the number of points to be variable
