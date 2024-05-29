@@ -153,6 +153,7 @@ class Evolution:
         # run generation_budget
         i_gen = 0
         while True:
+            # SET TO NONE BY DEFAULT
             if self.num_features_mutation_strength_decay_generations is not None:
                 if i_gen in self.num_features_mutation_strength_decay_generations:
                     self.num_features_mutation_strength *= self.num_features_mutation_strength_decay

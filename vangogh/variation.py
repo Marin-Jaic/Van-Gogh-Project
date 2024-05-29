@@ -7,13 +7,19 @@ import random
 def crossover(genes, method="ONE_POINT"):
     parents_1 = np.vstack((genes[:len(genes) // 2], genes[:len(genes) // 2]))
     parents_2 = np.vstack((genes[len(genes) // 2:], genes[len(genes) // 2:]))
+    offspring = np.zeros(shape=genes.shape, dtype=int)
 
     if method == "ONE_POINT":
         crossover_points = np.random.randint(0, genes.shape[1], size=genes.shape[0])
-        offspring = np.zeros(shape=genes.shape, dtype=int)
-
         for i in range(len(genes)):
             offspring[i,:] = np.where(np.arange(genes.shape[1]) <= crossover_points[i], parents_1[i,:], parents_2[i,:])
+    
+    # Uniform Crossover
+    elif method == "UNIFORM":
+        for i in range(0, len(genes), 2):
+            off_1, off_2 = uniform_crossover(parents_1[i,:], parents_2[i,:])
+            offspring[i, :] = off_1
+            offspring[i+1,:] = off_2
 
     # k-points
     elif method[0].isdigit() and method[1:] == '_POINT':
@@ -35,7 +41,14 @@ def crossover(genes, method="ONE_POINT"):
 
     return offspring
 
-# print(crossover())
+def uniform_crossover(parent1, parent2, p=0.5):
+    off_1, off_2 = parent1.copy(), parent2.copy()
+
+    for i in range(len(parent1)):
+        if np.random.uniform(0.0, 1.0) >= p:
+            off_1[i], off_2[i] = off_2[i], off_1[i]
+
+    return off_1, off_2
 
 def mutate(genes, feature_intervals,
            mutation_probability=0.1, num_features_mutation_strength=0.05):
@@ -66,6 +79,7 @@ def generate_plausible_mutations(genes, feature_intervals,
         # Fix out-of-range
         mutations[:, i] = np.where(mutations[:, i] > feature_intervals[i][1],
                                    feature_intervals[i][1], mutations[:, i])
+        
         mutations[:, i] = np.where(mutations[:, i] < feature_intervals[i][0],
                                    feature_intervals[i][0], mutations[:, i])
 
