@@ -51,12 +51,13 @@ def uniform_crossover(parent1, parent2, p=0.5):
     return off_1, off_2
 
 def mutate(genes, feature_intervals,
-           mutation_probability=0.1, num_features_mutation_strength=0.05):
+           mutation_probability=0.1, num_features_mutation_strength=0.05, mutation_distribution="UNIFORM"):
     mask_mut = np.random.choice([True, False], size=genes.shape,
                                 p=[mutation_probability, 1 - mutation_probability])
 
     mutations = generate_plausible_mutations(genes, feature_intervals,
-                                             num_features_mutation_strength)
+                                             num_features_mutation_strength,
+                                             mutation_distribution)
 
     offspring = np.where(mask_mut, mutations, genes)
 
@@ -64,7 +65,9 @@ def mutate(genes, feature_intervals,
 
 
 def generate_plausible_mutations(genes, feature_intervals,
-                                 num_features_mutation_strength=0.25):
+                                 num_features_mutation_strength=0.25, 
+                                 mutation_distribution="UNIFORM",
+                                 std=0.1):
     mutations = np.zeros(shape=genes.shape)
 
     for i in range(genes.shape[1]):
@@ -72,8 +75,14 @@ def generate_plausible_mutations(genes, feature_intervals,
         low = -num_features_mutation_strength / 2
         high = +num_features_mutation_strength / 2
 
-        mutations[:, i] = range_num * np.random.uniform(low=low, high=high,
+        if mutation_distribution == "UNIFORM":
+            mutations[:, i] = range_num * np.random.uniform(low=low, high=high,
                                                         size=mutations.shape[0])
+        elif mutation_distribution == "NORMAL":
+            mutations[:, i] = range_num * np.random.normal(loc=genes[:,i], scale=std,
+                                                        size=mutations.shape[0])
+        else:
+            raise Exception("Unknown mutation distribution")
         mutations[:, i] += genes[:, i]
 
         # Fix out-of-range
