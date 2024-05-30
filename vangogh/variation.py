@@ -7,13 +7,19 @@ from vangogh.util import NUM_VARIABLES_PER_POINT
 def crossover(genes, method="ONE_POINT"):
     parents_1 = np.vstack((genes[:len(genes) // 2], genes[:len(genes) // 2]))
     parents_2 = np.vstack((genes[len(genes) // 2:], genes[len(genes) // 2:]))
+    offspring = np.zeros(shape=genes.shape, dtype=int)
 
     if method == "ONE_POINT":
         crossover_points = np.random.randint(0, genes.shape[1], size=genes.shape[0])
-        offspring = np.zeros(shape=genes.shape, dtype=int)
-
         for i in range(len(genes)):
             offspring[i,:] = np.where(np.arange(genes.shape[1]) <= crossover_points[i], parents_1[i,:], parents_2[i,:])
+    
+    # Uniform Crossover
+    elif method == "UNIFORM":
+        for i in range(0, len(genes), 2):
+            off_1, off_2 = uniform_crossover(parents_1[i,:], parents_2[i,:])
+            offspring[i, :] = off_1
+            offspring[i+1,:] = off_2
 
     # k-points
     elif method[0].isdigit() and method[1:] == '_POINT':
@@ -56,6 +62,7 @@ def crossover(genes, method="ONE_POINT"):
 
     return offspring
 
+
 # sort parent points on axis and split in middle, give half of each parent to child
 # axis alternates between x and y every further split
 def split_parents(parent_1_points, parent_2_points, split):
@@ -79,13 +86,24 @@ def split_parents(parent_1_points, parent_2_points, split):
 
 # print(crossover())
 
+def uniform_crossover(parent1, parent2, p=0.5):
+    off_1, off_2 = parent1.copy(), parent2.copy()
+
+    for i in range(len(parent1)):
+        if np.random.uniform(0.0, 1.0) >= p:
+            off_1[i], off_2[i] = off_2[i], off_1[i]
+
+    return off_1, off_2
+
+
 def mutate(genes, feature_intervals,
-           mutation_probability=0.1, num_features_mutation_strength=0.05):
+           mutation_probability=0.1, num_features_mutation_strength=0.05, mutation_distribution="UNIFORM"):
     mask_mut = np.random.choice([True, False], size=genes.shape,
                                 p=[mutation_probability, 1 - mutation_probability])
 
     mutations = generate_plausible_mutations(genes, feature_intervals,
-                                             num_features_mutation_strength)
+                                             num_features_mutation_strength,
+                                             mutation_distribution)
 
     offspring = np.where(mask_mut, mutations, genes)
 
@@ -93,7 +111,9 @@ def mutate(genes, feature_intervals,
 
 
 def generate_plausible_mutations(genes, feature_intervals,
-                                 num_features_mutation_strength=0.25):
+                                 num_features_mutation_strength=0.25, 
+                                 mutation_distribution="UNIFORM",
+                                 std=0.1):
     mutations = np.zeros(shape=genes.shape)
 
     for i in range(genes.shape[1]):
@@ -101,13 +121,20 @@ def generate_plausible_mutations(genes, feature_intervals,
         low = -num_features_mutation_strength / 2
         high = +num_features_mutation_strength / 2
 
-        mutations[:, i] = range_num * np.random.uniform(low=low, high=high,
+        if mutation_distribution == "UNIFORM":
+            mutations[:, i] = range_num * np.random.uniform(low=low, high=high,
                                                         size=mutations.shape[0])
+        elif mutation_distribution == "NORMAL":
+            mutations[:, i] = range_num * np.random.normal(loc=genes[:,i], scale=std,
+                                                        size=mutations.shape[0])
+        else:
+            raise Exception("Unknown mutation distribution")
         mutations[:, i] += genes[:, i]
 
         # Fix out-of-range
         mutations[:, i] = np.where(mutations[:, i] > feature_intervals[i][1],
                                    feature_intervals[i][1], mutations[:, i])
+        
         mutations[:, i] = np.where(mutations[:, i] < feature_intervals[i][0],
                                    feature_intervals[i][0], mutations[:, i])
 
