@@ -6,10 +6,7 @@ def scalability(model_configs, run_algo, cfg_kwargs=None):
     pts = []
     ts = [] 
     for config in model_configs:
-        # pop_out = population_analysis(config, run_algo) if cfg_kwargs is None else population_analysis(config, run_algo, **cfg_kwargs)
-        pop_out = np.zeros((2, 10))
-        pop_out[0] = np.logspace(np.log10(1000), np.log10(1000000), num=10)
-        pop_out[1] = np.random.randint(0, 1000, size=(10,))
+        pop_out = population_analysis(config, run_algo) if cfg_kwargs is None else population_analysis(config, run_algo, **cfg_kwargs)
         pts_out = pop_out # TODO set to point_analysis
         ts_out = pop_out # TODO set to time_analysis
         pops.append(pop_out)
@@ -22,6 +19,7 @@ def scalability(model_configs, run_algo, cfg_kwargs=None):
     plt_names = ["Population Analysis", "Point Analysis", "Time Analysis"]
     y_names = ["Population Size", "# of Points", "Time(s)"]
     y_lims = [[0, 1000], [0, 1000], [0, 1000]] # TODO Set this when other plots are done
+    
     for i in range(3):
         axs[i].set_xscale('log')
         axs[i].set_yscale('log')
@@ -38,6 +36,8 @@ def scalability(model_configs, run_algo, cfg_kwargs=None):
         axs[2].plot(ts[i][0], ts[i][1])
     plt.savefig('scalability_analysis.png')
 
+# Tweak the thresh_range parameters, (maybe set to 10k)
+# Make sure that the pop. size is % by 4
 def population_analysis(default_settings, run_algo, \
                             thresh_range=(50000, 500000), thresh_mode='exp', thresh_n=10, 
                             pop_range=(10, 10000), pop_mode='linear', pop_n=8):
@@ -69,7 +69,7 @@ def population_analysis(default_settings, run_algo, \
             data = run_algo(default_settings)
             df = pd.DataFrame(data)
             pop_fitness = np.min(df["best-fitness"])
-            print(f"pop_fitness: <{pop_fitness}>, thresh: <{thresh}> ")
+            # print(f"pop_fitness: <{pop_fitness}>, thresh: <{thresh}> ")
             if pop_fitness < thresh:
                 out[1, thresh_idx] = pop_step
                 pop_found = True

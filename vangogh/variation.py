@@ -69,7 +69,7 @@ def mutate(genes, feature_intervals, mutation_probability=0.1,
 def generate_plausible_mutations(genes, feature_intervals,
                                  num_features_mutation_strength=0.25, 
                                  mutation_distribution="UNIFORM",
-                                 std=1):
+                                 std=1.0):
     mutations = np.zeros(shape=genes.shape)
 
     for i in range(genes.shape[1]):
