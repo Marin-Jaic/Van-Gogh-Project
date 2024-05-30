@@ -118,14 +118,15 @@ def time_analysis(default_settings, run_algo, \
 
 def point_analysis(default_settings, run_algo, \
                             thresh_range=(50000, 500000), thresh_mode='exp', thresh_n=10, 
-                            point_range=(10, 200), point_mode='linear', point_n=8):
+                            point_range=(10, 200), point_mode='linear', point_n=8, 
+                            population = 100):
     # Define threh range
     if thresh_mode == 'linear':
         thresh_steps = np.linspace(*thresh_range, thresh_n)
     elif thresh_mode == 'exp':
         thresh_steps = np.logspace(np.log10(thresh_range[0]), np.log10(thresh_range[1]), num=thresh_n)
         
-    # Define pointulation range
+    # Define point range
     if point_mode == 'linear':
         point_steps = np.linspace(*point_range, point_n)
     elif point_mode == 'exp':
@@ -142,6 +143,7 @@ def point_analysis(default_settings, run_algo, \
         while not point_found and point_i < len(point_steps):
             # Set point in settings
             point_step = point_steps[point_i]
+            default_settings[1] = population
             default_settings[3] = int(point_step)
             
             data = run_algo(default_settings)
