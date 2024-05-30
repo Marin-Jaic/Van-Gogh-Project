@@ -1,6 +1,6 @@
 import numpy as np
 import random
-
+from vangogh.util import NUM_VARIABLES_PER_POINT
 
 
 
@@ -36,10 +36,55 @@ def crossover(genes, method="ONE_POINT"):
                     if j + 1 < crossover_points.shape[1]:
                         end = crossover_points[i,j+1]
                     offspring[i, start:end] = parents_2[i, start:end]
+    #space
+    elif method[0].isdigit() and method[1:] == '_SPATIAL':
+        offspring = np.zeros(shape=genes.shape, dtype=int)
+        for i in range(len(genes)):
+
+            #reshape as points
+            parent_1_points = []
+            parent_2_points = []
+            num_points = int(len(genes[i]) / NUM_VARIABLES_PER_POINT)
+            for r in range(num_points):
+                p = r * NUM_VARIABLES_PER_POINT
+                x, y, r, g, b = parents_1[i,p:p + NUM_VARIABLES_PER_POINT]
+                parent_1_points.append((x , y,r,g,b))
+
+                x, y, r, g, b = parents_2[i,p:p + NUM_VARIABLES_PER_POINT]
+                parent_2_points.append((x , y,r,g,b))
+            
+            offspring_points = split_parents(parent_1_points, parent_2_points, int(method[0]))
+
+            #flatten
+            offspring[i, :] = np.concatenate(offspring_points).ravel().tolist()
     else:
         raise Exception("Unknown crossover method")
 
     return offspring
+
+
+# sort parent points on axis and split in middle, give half of each parent to child
+# axis alternates between x and y every further split
+def split_parents(parent_1_points, parent_2_points, split):
+    
+    length = len(parent_1_points)
+    if split%2 == 0:
+        parent_1_points.sort(key=lambda y : y[1])
+        parent_2_points.sort(key=lambda y : y[1])
+    else:
+        parent_1_points.sort(key=lambda x : x[0])
+        parent_2_points.sort(key=lambda x : x[0])
+
+    # recursive base case
+    if split == 1:
+        return np.concatenate([parent_1_points[:int(length//2)], parent_2_points[int(length//2):]])
+
+    left_side = split_parents(parent_1_points[:int(length//2)], parent_2_points[:int(length//2)], split-1)
+    right_side = split_parents(parent_1_points[int(length//2):], parent_2_points[int(length//2):], split-1)
+
+    return np.concatenate([left_side, right_side])
+
+# print(crossover())
 
 def uniform_crossover(parent1, parent2, p=0.5):
     off_1, off_2 = parent1.copy(), parent2.copy()
