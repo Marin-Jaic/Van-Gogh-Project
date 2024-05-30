@@ -116,4 +116,47 @@ def time_analysis(default_settings, run_algo, \
     
     return out
 
-##TODO Num points, literally the same as population number, juts fix population and set the number of points to be variable
+def point_analysis(default_settings, run_algo, \
+                            thresh_range=(50000, 500000), thresh_mode='exp', thresh_n=10, 
+                            point_range=(10, 200), point_mode='linear', point_n=8):
+    # Define threh range
+    if thresh_mode == 'linear':
+        thresh_steps = np.linspace(*thresh_range, thresh_n)
+    elif thresh_mode == 'exp':
+        thresh_steps = np.logspace(np.log10(thresh_range[0]), np.log10(thresh_range[1]), num=thresh_n)
+        
+    # Define pointulation range
+    if point_mode == 'linear':
+        point_steps = np.linspace(*point_range, point_n)
+    elif point_mode == 'exp':
+        point_steps = np.logspace(np.log10(point_range[0]), np.log10(point_range[1]), num=point_n)
+
+    print("thresh_steps : ", thresh_steps)
+    print("point_steps : ", point_steps)
+    
+    out = np.zeros((2, thresh_n))
+    out[0] = thresh_steps
+    for thresh_idx, thresh in enumerate(thresh_steps):
+        point_found = False
+        point_i = 0
+        while not point_found and point_i < len(point_steps):
+            # Set point in settings
+            point_step = point_steps[point_i]
+            default_settings[3] = int(point_step)
+            
+            data = run_algo(default_settings)
+            df = pd.DataFrame(data)
+            point_fitness = np.min(df["best-fitness"])
+            print(f"point_fitness: <{point_fitness}>, thresh: <{thresh}> ")
+            if point_fitness < thresh:
+                out[1, thresh_idx] = point_step
+                point_found = True
+            point_i += 1
+        if not point_found:
+            out[1, thresh_idx] = -1
+
+    out_filename = "point_analysis.npy"
+    with open(out_filename, 'wb') as f:
+        np.save(f, out)
+    
+    return out
