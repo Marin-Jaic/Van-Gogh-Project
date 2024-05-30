@@ -50,24 +50,26 @@ def uniform_crossover(parent1, parent2, p=0.5):
 
     return off_1, off_2
 
-def mutate(genes, feature_intervals,
-           mutation_probability=0.1, num_features_mutation_strength=0.05, mutation_distribution="UNIFORM"):
+def mutate(genes, feature_intervals, mutation_probability=0.1, 
+           num_features_mutation_strength=0.05, mutation_distribution="UNIFORM",
+           std=1.0):
     mask_mut = np.random.choice([True, False], size=genes.shape,
                                 p=[mutation_probability, 1 - mutation_probability])
 
     mutations = generate_plausible_mutations(genes, feature_intervals,
                                              num_features_mutation_strength,
-                                             mutation_distribution)
+                                             mutation_distribution, std=std)
 
     offspring = np.where(mask_mut, mutations, genes)
 
     return offspring
 
-
+# Try with different variances over time
+# Play around with the mutation strength
 def generate_plausible_mutations(genes, feature_intervals,
                                  num_features_mutation_strength=0.25, 
                                  mutation_distribution="UNIFORM",
-                                 std=0.1):
+                                 std=1):
     mutations = np.zeros(shape=genes.shape)
 
     for i in range(genes.shape[1]):

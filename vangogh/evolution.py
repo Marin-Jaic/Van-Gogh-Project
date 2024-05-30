@@ -29,7 +29,8 @@ class Evolution:
                  verbose=False,
                  generation_reporter=None,
                  seed=0,
-                 mutation_distribution="UNIFORM"):
+                 mutation_distribution="UNIFORM",
+                 std=1.0):
 
         self.reference_image: Image = reference_image.copy()
         self.reference_image.thumbnail((int(self.reference_image.width / IMAGE_SHRINK_SCALE),
@@ -67,6 +68,7 @@ class Evolution:
 
         # Added
         self.mutation_distribution = mutation_distribution
+        self.std = std
 
         np.random.seed(seed)
         self.seed = seed
@@ -119,7 +121,8 @@ class Evolution:
         offspring.genes = variation.mutate(offspring.genes, self.feature_intervals,
                                            mutation_probability=self.mutation_probability,
                                            num_features_mutation_strength=self.num_features_mutation_strength,
-                                           mutation_distribution=self.mutation_distribution)
+                                           mutation_distribution=self.mutation_distribution,
+                                           std=self.std)
         # evaluate offspring
         offspring.fitnesses = drawing_fitness_function(offspring.genes,
                                                        self.reference_image)
@@ -201,7 +204,7 @@ class Evolution:
         draw_voronoi_image(self.elite, self.reference_image.width, self.reference_image.height,
                            scale=IMAGE_SHRINK_SCALE) \
             .save(
-            f"./img/van_gogh_final_{self.seed}_{self.population_size}_{self.crossover_method}_{self.mutation_distribution}_{self.num_points}_{self.initialization}_{self.generation_budget}.png")
+            f"./img/van_gogh_final_{self.seed}_{self.population_size}_{self.crossover_method}_{self.mutation_distribution}_{self.std}_{self.num_points}_{self.initialization}_{self.generation_budget}.png")
         return data
 
 
