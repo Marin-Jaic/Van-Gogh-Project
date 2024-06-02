@@ -90,6 +90,7 @@ def population_analysis(default_settings, run_algo, \
 
 def run_experiment(model_configs, run_algo, num_runs=10, cfg_kwargs=None):
     final_results = {}
+    
     def helper(index, config, results):
         res = run_algo(config)
         results[index] = [episode['best-fitness'] for episode in res]
