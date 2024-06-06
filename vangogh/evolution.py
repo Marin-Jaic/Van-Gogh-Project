@@ -8,7 +8,7 @@ from vangogh import selection, variation
 from vangogh.fitness import drawing_fitness_function, draw_voronoi_image
 from vangogh.population import Population
 from vangogh.util import NUM_VARIABLES_PER_POINT, IMAGE_SHRINK_SCALE, REFERENCE_IMAGE
-
+from tqdm import tqdm
 
 class Evolution:
     def __init__(self,
@@ -160,6 +160,7 @@ class Evolution:
 
         # run generation_budget
         i_gen = 0
+        bar = tqdm(range(self.generation_budget))
         while True:
             # SET TO NONE BY DEFAULT
             if self.num_features_mutation_strength_decay_generations is not None:
@@ -175,6 +176,7 @@ class Evolution:
 
             # generation terminated
             i_gen += 1
+            bar.update()
             if self.verbose:
                 print('generation:', i_gen, 'best fitness:', self.elite_fitness, 'avg. fitness:',
                       np.mean(self.population.fitnesses))
