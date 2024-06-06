@@ -3,7 +3,7 @@ from PIL import Image
 from vangogh.HomogenityProcessing import homogeneous_mask
 
 IMAGE_PATH = "./img/reference_image_resized.jpg"
-GUIDED_POINTS_RATIO = 0.5
+GUIDED_POINTS_RATIO = 0.25
 THRESHOLD = 2
 KERNEL_SIZE = 4
 
