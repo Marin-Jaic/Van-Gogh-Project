@@ -3,9 +3,9 @@ from PIL import Image
 from vangogh.HomogenityProcessing import homogeneous_mask
 
 IMAGE_PATH = "./img/reference_image_resized.jpg"
-GUIDED_POINTS_RATIO = 0.2
-THRESHOLD = 1.5
-KERNEL_SIZE = 5
+GUIDED_POINTS_RATIO = 0.5
+THRESHOLD = 2
+KERNEL_SIZE = 4
 
 class Population:
     def __init__(self, population_size, genotype_length, initialization):

@@ -68,7 +68,7 @@ def processImages():
     # Example usage
     image_path = "./img/reference_image_resized.jpg"
     #2, 4 or 2,3 seem to work best
-    result_image, homogeneous_mask = detect_homogeneous_areas(image_path, threshold=1.5, kernel_size=5)
+    result_image, homogeneous_mask = detect_homogeneous_areas(image_path, threshold=2, kernel_size=4)
 
     # Save or display the results
     result_image.save('./vangogh/processed_images/homogeneous_areas.png')
