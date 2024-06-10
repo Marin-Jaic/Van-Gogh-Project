@@ -3,6 +3,7 @@ import random
 from vangogh.util import NUM_VARIABLES_PER_POINT
 
 
+def crossover(genes, method="ONE_POINT"):
 
 def crossover(genes, method="ONE_POINT"):
     parents_1 =genes[:len(genes) // 2]
@@ -168,48 +169,71 @@ def uniform_crossover_distinct(parent1, parent2, p=0.5):
     return off_1, off_2
 
 def mutate(genes, feature_intervals, mutation_probability=0.1, 
-           num_features_mutation_strength=0.05, mutation_distribution="UNIFORM",
-           std=1.0):
-    mask_mut = np.random.choice([True, False], size=genes.shape,
-                                p=[mutation_probability, 1 - mutation_probability])
+           num_features_mutation_strength=0.05, mutation_type="UNIFORM", 
+           alpha=0.214, tau=0.3, delta=2.0, prev_shift=0.0):
+    
+    if mutation_type == "AMS":
+        mutation_probability = 0.5 * tau
 
     mutations = generate_plausible_mutations(genes, feature_intervals,
-                                             num_features_mutation_strength,
-                                             mutation_distribution, std=std)
+                                            num_features_mutation_strength,
+                                            mutation_type, delta, prev_shift)
 
+    mask_mut = np.random.choice([True, False], size=genes.shape,
+                                p=[mutation_probability, 1 - mutation_probability])
     offspring = np.where(mask_mut, mutations, genes)
 
-    return offspring
+    return offspring, np.mean(genes, axis=1)
 
 # Try with different variances over time
 # Play around with the mutation strength
 def generate_plausible_mutations(genes, feature_intervals,
                                  num_features_mutation_strength=0.25, 
-                                 mutation_distribution="UNIFORM",
-                                 std=1.0):
+                                 mutation_type="UNIFORM",
+                                 delta=2.0, prev_mean=0.0):
+    
     mutations = np.zeros(shape=genes.shape)
 
-    for i in range(genes.shape[1]):
-        range_num = feature_intervals[i][1] - feature_intervals[i][0]
-        low = -num_features_mutation_strength / 2
-        high = +num_features_mutation_strength / 2
+    if mutation_type == "AMS":
+        mean = np.mean(genes, axis=1)
+        variance = np.var(genes, axis=1)
+        sample = mean + np.random.normal(size=genes.shape) * variance[:, np.newaxis]
+        mutations = sample + delta * (mean - prev_mean)
 
-        if mutation_distribution == "UNIFORM":
-            mutations[:, i] = range_num * np.random.uniform(low=low, high=high,
-                                                        size=mutations.shape[0])
-        elif mutation_distribution == "NORMAL":
-            mutations[:, i] = range_num * np.random.normal(loc=genes[:,i], scale=std,
-                                                        size=mutations.shape[0])
-        else:
-            raise Exception("Unknown mutation distribution")
-        mutations[:, i] += genes[:, i]
-
-        # Fix out-of-range
-        mutations[:, i] = np.where(mutations[:, i] > feature_intervals[i][1],
-                                   feature_intervals[i][1], mutations[:, i])
+        # Inneficient but should do the job
+        for i in range(genes.shape[1]):
+            range_num = feature_intervals[i][1] - feature_intervals[i][0]
+            low = -num_features_mutation_strength / 2
+            high = +num_features_mutation_strength / 2
         
-        mutations[:, i] = np.where(mutations[:, i] < feature_intervals[i][0],
-                                   feature_intervals[i][0], mutations[:, i])
+            # Fix out-of-range
+            mutations[:, i] = np.where(mutations[:, i] > feature_intervals[i][1],
+                                    feature_intervals[i][1], mutations[:, i])
+            
+            mutations[:, i] = np.where(mutations[:, i] < feature_intervals[i][0],
+                                    feature_intervals[i][0], mutations[:, i])
+    else :
+        for i in range(genes.shape[1]):
+            range_num = feature_intervals[i][1] - feature_intervals[i][0]
+            low = -num_features_mutation_strength / 2
+            high = +num_features_mutation_strength / 2
+
+            if mutation_type == "UNIFORM":
+                mutations[:, i] = range_num * np.random.uniform(low=low, high=high,
+                                                            size=mutations.shape[0])
+            elif mutation_type == "NORMAL":
+                variance = np.var(genes, axis=1)
+                mutations[:, i] = range_num * np.random.normal(loc=genes[:,i], size=mutations.shape[0]) * variance
+            else:
+                raise Exception("Unknown mutation distribution")
+            mutations[:, i] += genes[:, i]
+
+            # Fix out-of-range
+            mutations[:, i] = np.where(mutations[:, i] > feature_intervals[i][1],
+                                    feature_intervals[i][1], mutations[:, i])
+            
+            mutations[:, i] = np.where(mutations[:, i] < feature_intervals[i][0],
+                                    feature_intervals[i][0], mutations[:, i])
 
     mutations = mutations.astype(int)
     return mutations

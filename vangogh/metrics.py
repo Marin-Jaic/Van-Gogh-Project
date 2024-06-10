@@ -125,5 +125,5 @@ def plot_results(results, titles):
         plt.title(titles[index])
         plt.xlabel('Generation')
         plt.ylabel('Best Fitness')
-        plt.savefig(titles[index].replace(' ', '_').lower() + ".png")
+        plt.savefig('result_figures/' + titles[index].replace(' ', '_').lower() + ".png")
         plt.clf()
