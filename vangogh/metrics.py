@@ -92,6 +92,7 @@ def run_experiment(model_configs, run_algo, num_runs=10, cfg_kwargs=None):
     final_results = {}
     
     def helper(index, config, results):
+        config[0] = index
         res = run_algo(config)
         results[index] = [episode['best-fitness'] for episode in res]
     
@@ -103,14 +104,17 @@ def run_experiment(model_configs, run_algo, num_runs=10, cfg_kwargs=None):
             "0.95": {}
         }
         threads = []
+        # for j in range(num_runs):
+        #     thread = threading.Thread(target=helper, args=(j, config, results))
+        #     thread.start()
+        #     threads.append(thread)
+
+        # for j, thread in enumerate(threads):
+        #     thread.join()
+
         for j in range(num_runs):
-            thread = threading.Thread(target=helper, args=(j, config, results))
-            thread.start()
-            threads.append(thread)
-
-        for j, thread in enumerate(threads):
-            thread.join()
-
+            helper(j, config, results)
+        print(results)
         final_results[i]["mean"] = [np.mean([results[j][k] for j in range(num_runs)]) for k in range(min(list(map(len, results.values()))))]
         final_results[i]["0.05"] = [np.quantile([results[j][k] for j in range(num_runs)], 0.05) for k in range(min(list(map(len, results.values()))))]
         final_results[i]["0.95"] = [np.quantile([results[j][k] for j in range(num_runs)], 0.95) for k in range(min(list(map(len, results.values()))))]

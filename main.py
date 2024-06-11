@@ -41,7 +41,7 @@ def reporter(time, evo):
         elite.save(f"./img/van_gogh_intermediate_{evo.seed}_{evo.population_size}_{evo.crossover_method}_{evo.num_points}_{evo.initialization}_{evo.generation_budget}_{time['num-generations']:05d}.png")
 
 def run_algorithm(settings):
-    seed, population_size, crossover_method, num_points, initialization, generation_budget = settings
+    seed, population_size, crossover_method, num_points, initialization, generation_budget, p = settings
     start = time()
     
     data = []
@@ -55,7 +55,8 @@ def run_algorithm(settings):
                     generation_budget=generation_budget,
                     num_features_mutation_strength=.25,
                     selection_name='tournament_4',
-                    verbose=verbose_output)
+                    verbose=verbose_output,
+                    p = p)
     data = evo.run()
     time_spent = time() - start
     # print(f"Done: run {seed} - pop {population_size} - crossover {crossover_method} - num. points {num_points} - initialization {initialization} - in {int(time_spent)} seconds")
@@ -63,10 +64,11 @@ def run_algorithm(settings):
     return data
 
 if __name__ == "__main__":
-    crossover_methods = ["ONE_POINT", "2_POINT", "5_POINT", "2_SPATIAL", "5_SPATIAL", "UNIFORM"]
+    guided_point_ratio = ["RANDOM"]
     # crossover_methods = ["ONE_POINT", "2_POINT"]
-    configs = [[0, 100, method, 100, 'RANDOM', 500] for method in crossover_methods]
 
-    results = run_experiment(configs, run_algorithm, num_runs=10)
-    plot_results(results=results, titles=[f"Run with {method}" for method in crossover_methods])
+    configs = [[0, 100, "UNIFORM", 100, method, 500, 1] for method in guided_point_ratio]
+
+    results = run_experiment(configs, run_algorithm, num_runs=5)
+    plot_results(results=results, titles=[f"Run with {method}" for method in guided_point_ratio])
     print('Finished.')

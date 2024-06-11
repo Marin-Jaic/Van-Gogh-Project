@@ -30,7 +30,8 @@ class Evolution:
                  generation_reporter=None,
                  seed=0,
                  mutation_distribution="UNIFORM",
-                 std=1.0):
+                 std=1.0, 
+                 p = 0.25):
 
         self.reference_image: Image = reference_image.copy()
         self.reference_image.thumbnail((int(self.reference_image.width / IMAGE_SHRINK_SCALE),
@@ -65,6 +66,8 @@ class Evolution:
         self.crossover_method = crossover_method
         self.num_evaluations = 0
         self.initialization = initialization
+        #Marin addition for guided init
+        self.p = p
 
         # Added
         self.mutation_distribution = mutation_distribution
@@ -85,7 +88,7 @@ class Evolution:
 
         # set up population and elite
         self.genotype_length = len(feature_intervals)
-        self.population = Population(self.population_size, self.genotype_length, self.initialization)
+        self.population = Population(self.population_size, self.genotype_length, self.initialization, self.p)
         self.elite = None
         self.elite_fitness = np.inf
 
@@ -113,7 +116,7 @@ class Evolution:
 
     def __classic_generation(self, merge_parent_offspring=False):
         # create offspring population
-        offspring = Population(self.population_size, self.genotype_length, self.initialization)
+        offspring = Population(self.population_size, self.genotype_length, self.initialization, self.p)
         offspring.genes[:] = self.population.genes[:]
         offspring.shuffle()
         # variation
