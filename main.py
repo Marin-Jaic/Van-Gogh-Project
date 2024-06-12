@@ -66,8 +66,9 @@ def run_algorithm(settings):
 if __name__ == "__main__":
     crossover_methods = ["ONE_POINT", "2_POINT", "5_POINT", "2_SPATIAL", "5_SPATIAL", "UNIFORM"]
     # crossover_methods = ["ONE_POINT", "2_POINT"]  # Dummy for testing
-    configs = [[0, 100, method, 100, 'RANDOM', 500, "AMS"] for method in crossover_methods]
+    mutation_type = "UNIFORM"
+    configs = [[0, 100, method, 100, 'RANDOM', 500, mutation_type] for method in crossover_methods]
 
     results = run_experiment(configs, run_algorithm, num_runs=10)
-    plot_results(results=results, titles=[f"Run with {method} AMS" for method in crossover_methods])
+    plot_results(results=results, titles=[f"Run with {method} {mutation_type}" for method in crossover_methods])
     print('Finished.')

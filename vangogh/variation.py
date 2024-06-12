@@ -4,8 +4,6 @@ from vangogh.util import NUM_VARIABLES_PER_POINT
 
 
 def crossover(genes, method="ONE_POINT"):
-
-def crossover(genes, method="ONE_POINT"):
     parents_1 =genes[:len(genes) // 2]
     parents_2 = genes[len(genes) // 2:]
     offspring = np.zeros(shape=genes.shape, dtype=int)
@@ -183,7 +181,7 @@ def mutate(genes, feature_intervals, mutation_probability=0.1,
                                 p=[mutation_probability, 1 - mutation_probability])
     offspring = np.where(mask_mut, mutations, genes)
 
-    return offspring, np.mean(genes, axis=1)
+    return offspring, np.mean(genes, axis=0)
 
 # Try with different variances over time
 # Play around with the mutation strength
@@ -195,9 +193,9 @@ def generate_plausible_mutations(genes, feature_intervals,
     mutations = np.zeros(shape=genes.shape)
 
     if mutation_type == "AMS":
-        mean = np.mean(genes, axis=1)
-        variance = np.var(genes, axis=1)
-        sample = mean + np.random.normal(size=genes.shape) * variance[:, np.newaxis]
+        mean = np.mean(genes, axis=0)
+        variance = np.var(genes, axis=0)
+        sample = mean + np.random.normal(size=genes.shape) * variance
         mutations = sample + delta * (mean - prev_mean)
 
         # Inneficient but should do the job
@@ -222,7 +220,7 @@ def generate_plausible_mutations(genes, feature_intervals,
                 mutations[:, i] = range_num * np.random.uniform(low=low, high=high,
                                                             size=mutations.shape[0])
             elif mutation_type == "NORMAL":
-                variance = np.var(genes, axis=1)
+                variance = np.var(genes, axis=0)
                 mutations[:, i] = range_num * np.random.normal(loc=genes[:,i], size=mutations.shape[0]) * variance
             else:
                 raise Exception("Unknown mutation distribution")
